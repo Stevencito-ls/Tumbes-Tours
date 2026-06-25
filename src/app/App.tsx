@@ -86,12 +86,24 @@ export default function App() {
 
   const handleRegister = async (name: string, email: string, password: string, phone: string, dni: string) => {
     try {
-      const newUser = await signUp(email, password, name, phone, dni);
-      setUser(newUser);
-      setCurrentPage("home");
-      toast.success("¡Cuenta creada exitosamente!");
+      const result = await signUp(email, password, name, phone, dni);
+
+      if ('pending' in result && result.pending) {
+        toast.success('Registro recibido. Revisa tu correo para confirmar la cuenta.');
+        setCurrentPage('welcome');
+        return;
+      }
+
+      const newUser = result.user;
+      if (newUser) {
+        setUser(newUser);
+        setCurrentPage('home');
+        toast.success('¡Cuenta creada exitosamente!');
+      } else {
+        throw new Error('No se obtuvo información del usuario tras el registro');
+      }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Error al crear la cuenta";
+      const message = err instanceof Error ? err.message : 'Error al crear la cuenta';
       toast.error(message);
     }
   };
